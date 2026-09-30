@@ -166,13 +166,11 @@ const seccionProyectos = () => {
       <input type="text" data-ruta="${r}.pregunta.2" data-tipo="texto" value="${esc(p.pregunta?.[2])}" placeholder="Final: los costos…?">
     </div>
     ${campo(`${r}.desarrollo`, 'Texto de desarrollo', { tipo: 'parrafos', ancho: true, ayuda: 'Separa los párrafos con una línea en blanco.' })}
-    ${campo(`${r}.pies`, 'Pies de imagen (4 líneas)', { tipo: 'lineas', ancho: true })}
-    ${imagen(`${r}.img.mapa`, 'Mapa o diagrama', '600 × 600')}
-    ${imagen(`${r}.img.principal`, 'Imagen principal (y miniatura)', '1200 × 900')}
-    ${imagen(`${r}.img.dev.0`, 'Desarrollo 1', '800 × 440')}
-    ${imagen(`${r}.img.dev.1`, 'Desarrollo 2', '800 × 440')}
-    ${imagen(`${r}.img.dev.2`, 'Desarrollo 3', '900 × 600')}
-    ${imagen(`${r}.img.dev.3`, 'Desarrollo 4', '900 × 600')}
+    ${campo(`${r}.pies`, 'Pies de imagen (7 líneas, una por imagen de desarrollo)', { tipo: 'lineas', ancho: true })}
+    ${imagen(`${r}.img.mapa`, 'Plano de ubicación (ficha)', '600 × 600')}
+    ${imagen(`${r}.img.principal`, 'Imagen principal vertical (ficha y miniatura)', '900 × 1200')}
+    ${[0, 1, 2].map(i => imagen(`${r}.img.dev.${i}`, `Desarrollo ${i + 1} · columna izquierda`, '800 × 440')).join('')}
+    ${[3, 4, 5, 6].map(i => imagen(`${r}.img.dev.${i}`, `Desarrollo ${i + 1} · grilla derecha`, '900 × 600')).join('')}
   </div>
 </div>`;
   }).join('') + `<p style="text-align:center"><button type="button" data-accion="anadir">Añadir proyecto</button></p>`;

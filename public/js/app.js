@@ -14,6 +14,11 @@ const ph  = (texto, src, clase = '') =>
   `<div class="ph ${clase}">${src ? `<img src="${esc(src)}" alt="${esc(texto.replace(/<br>/g,' '))}" loading="lazy">` : texto}</div>`;
 const entradas = lista => (lista || []).map(e =>
   `<div class="entrada"><span class="fecha">${esc(e.fecha)}</span><br>${(e.lineas || []).map(esc).join('<br>')}</div>`).join('');
+/* sección con título; se omite por completo si la lista está vacía */
+const bloque = (titulo, lista, extra = '') =>
+  (lista && lista.length) ? `<div class="bloque"><h2 class="t-seccion">${titulo}</h2>${entradas(lista)}${extra}</div>` : '';
+const seccionDer = (titulo, lista) =>
+  (lista && lista.length) ? `<h2 class="t-seccion">${titulo}</h2>${entradas(lista)}` : '';
 
 /* ── ilustraciones ───────────────────────────────────────── */
 const SVG_PORTADA = `
@@ -99,29 +104,25 @@ const spreadCV = d => {
     <span class="autor-mini">${esc(d.autor)}</span>
     ${ph('Foto de retrato<br>600 × 800', p.foto, 'retrato')}
     <p class="cuerpo">${esc(p.intro)}</p>
-    <dl class="datos">
-      <dt>Edad</dt><dd>${esc(dt.edad)}</dd>
-      <dt>Origen</dt><dd>${esc(dt.origen)}</dd>
-      <dt>Contacto</dt><dd>${esc(dt.contacto)}</dd>
-      <dt>Teléfono</dt><dd>${esc(dt.telefono)}</dd>
-    </dl>
-    <div class="bloque"><h2 class="t-seccion">Educación</h2>${entradas(p.educacion)}</div>
-    <div class="bloque"><h2 class="t-seccion">Idiomas</h2>
-      ${(p.idiomas || []).map(i => `<div class="idioma"><span>${esc(i.nombre)}</span><span class="barra"><i style="width:${+i.nivel || 0}%"></i></span></div>`).join('')}
-    </div>
-    <div class="bloque"><h2 class="t-seccion">Voluntariado</h2>${entradas(p.voluntariado)}</div>
+    <dl class="datos">${[['Edad', dt.edad], ['Origen', dt.origen], ['Contacto', dt.contacto], ['Teléfono', dt.telefono]]
+      .filter(([, v]) => v).map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
+    ${bloque('Educación', p.educacion)}
+    ${(p.idiomas || []).length ? `<div class="bloque"><h2 class="t-seccion">Idiomas</h2>
+      ${p.idiomas.map(i => `<div class="idioma"><span>${esc(i.nombre)}</span><span class="barra"><i style="width:${+i.nivel || 0}%"></i></span></div>`).join('')}
+    </div>` : ''}
+    ${bloque('Voluntariado', p.voluntariado)}
   </div>
   <div class="pagina der">
     <div>
-      <h2 class="t-seccion">Experiencia académica</h2>${entradas(p.academica)}
-      <h2 class="t-seccion">Experiencia profesional</h2>${entradas(p.profesional)}
+      ${seccionDer('Experiencia académica', p.academica)}
+      ${seccionDer('Experiencia profesional', p.profesional)}
     </div>
     <div>
-      <h2 class="t-seccion">Comisiones independientes</h2>${entradas(p.comisiones)}
-      <h2 class="t-seccion">Cursos y certificaciones</h2>${entradas(p.cursos)}
-      <h2 class="t-seccion">Concursos</h2>${entradas(p.concursos)}
-      <h2 class="t-seccion">Softwares</h2>
-      <div class="software">${(p.software || []).map(s => `<span>${esc(s.nombre)}</span><span>${+s.nivel || 0}%</span>`).join('')}</div>
+      ${seccionDer('Comisiones independientes', p.comisiones)}
+      ${seccionDer('Cursos y certificaciones', p.cursos)}
+      ${seccionDer('Concursos', p.concursos)}
+      ${(p.software || []).length ? `<h2 class="t-seccion">Softwares</h2>
+      <div class="software">${p.software.map(s => `<span>${esc(s.nombre)}</span><span>${+s.nivel || 0}%</span>`).join('')}</div>` : ''}
     </div>
   </div>
 </section>
@@ -204,19 +205,14 @@ const spreadDesarrollo = p => {
   <div class="pagina izq">
     <div class="fila">
       <div class="apilados">
-        ${ph(`${esc(pies[0] || '')}<br>800 × 440`, dev[0])}
-        ${ph(`${esc(pies[1] || '')}<br>800 × 440`, dev[1])}
-        ${ph('Detalle adicional<br>800 × 440', '')}
+        ${[0, 1, 2].map(i => ph(`${esc(pies[i] || 'Imagen')}<br>800 × 440`, dev[i])).join('')}
       </div>
       <div>${(p.desarrollo || []).map(t => `<p class="cuerpo">${esc(t)}</p>`).join('')}</div>
     </div>
   </div>
   <div class="pagina der">
     <div class="grilla2">
-      <figure>${ph(`${esc(pies[2] || '')}<br>900 × 600`, dev[2])}<figcaption>${esc(pies[2] || '')}</figcaption></figure>
-      <figure>${ph(`${esc(pies[3] || '')}<br>900 × 600`, dev[3])}<figcaption>${esc(pies[3] || '')}</figcaption></figure>
-      <figure>${ph('Vista de detalle<br>900 × 600', '')}<figcaption>Vista de detalle</figcaption></figure>
-      <figure>${ph('Resultado final<br>900 × 600', '')}<figcaption>Resultado final</figcaption></figure>
+      ${[3, 4, 5, 6].map(i => `<figure>${ph(`${esc(pies[i] || 'Imagen')}<br>900 × 600`, dev[i])}<figcaption>${esc(pies[i] || '')}</figcaption></figure>`).join('')}
     </div>
   </div>
 </article>
