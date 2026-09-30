@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio · Leider Tisnado Mego</title>
+<meta name="description" content="Portafolio editorial de Leider Tisnado Mego — desarrollo web y análisis de costos y datos. Lima, Perú.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+
+<style>
+/* ══════════════════════════════════════════════════════════
+   VARIABLES GLOBALES
+   ══════════════════════════════════════════════════════════ */
+:root{
+  --fondo:#E8E8E8;
+  --papel:#FFFFFF;
+  --papel-2:#FAFAFA;
+  --tinta:#111111;
+  --gris-1:#333333;
+  --gris-2:#666666;
+  --gris-3:#999999;
+  --gris-4:#CCCCCC;
+  --gris-5:#DDDDDD;
+  --gris-6:#EEEEEE;
+
+  --fuente:'Jost','Montserrat',system-ui,sans-serif;
+
+  --spread-w:1000px;           /* ancho del libro abierto */
+  --spread-ratio:2 / 1.35;     /* proporción doble página */
+  --pagina-ratio:1 / 1.414;    /* proporción A4 vertical */
+  --portada-w:480px;           /* ancho del libro cerrado */
+  --margen-pagina:40px;
+  --separacion:100px;          /* gris entre spreads */
+  --sombra:0 30px 60px rgba(0,0,0,.18);
+  --escala:1;                  /* ajustada por JS en tablet */
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-snap-type:y proximity;scroll-behavior:smooth}
+body{
+  background:var(--fondo);
+  color:var(--gris-1);
+  font-family:var(--fuente);
+  font-weight:300;
+  font-size:10px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+img{display:block;max-width:100%;filter:grayscale(100%)}
+a{color:inherit;text-decoration:none}
+ul,ol{list-style:none}
+
+/* ══════════════════════════════════════════════════════════
+   UI FIJA: barra de progreso, botón PDF, indicador de página
+   ══════════════════════════════════════════════════════════ */
+#progreso{position:fixed;top:0;left:0;height:2px;width:0;background:var(--tinta);z-index:50;transition:width .15s linear}
+#btn-pdf{
+  position:fixed;top:22px;right:26px;z-index:50;
+  font:500 9px/1 var(--fuente);letter-spacing:.22em;text-transform:uppercase;
+  color:var(--tinta);background:transparent;border:1px solid var(--tinta);
+  padding:9px 14px;cursor:pointer;transition:background .25s,color .25s;
+}
+#btn-pdf:hover{background:var(--tinta);color:var(--papel)}
+#indicador{
+  position:fixed;bottom:22px;right:26px;z-index:50;
+  font-size:9px;letter-spacing:.15em;color:var(--gris-2);text-transform:uppercase;
+}
+
+/* ══════════════════════════════════════════════════════════
+   ESTRUCTURA BASE DE UN SPREAD
+   ══════════════════════════════════════════════════════════ */
+.spread-wrap{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:calc(var(--separacion) / 2) 16px;
+  scroll-snap-align:center;
+}
+.spread{
+  width:var(--spread-w);max-width:100%;
+  aspect-ratio:var(--spread-ratio);
+  background:var(--papel);
+  box-shadow:var(--sombra);
+  display:grid;grid-template-columns:1fr 1fr;
+  position:relative;
+  opacity:0;transform:translateY(30px);
+  transition:opacity .7s ease,transform .7s ease;
+  transform-origin:top center;
+}
+.spread.visible{opacity:1;transform:translateY(0) scale(var(--escala))}
+/* lomo del libro */
+.spread::before{
+  content:"";position:absolute;top:0;bottom:0;left:50%;width:40px;
+  transform:translateX(-50%);pointer-events:none;z-index:2;
+  background:linear-gradient(to right,rgba(0,0,0,0) 0%,rgba(0,0,0,.10) 50%,rgba(0,0,0,0) 100%);
+}
+.pagina{
+  position:relative;padding:var(--margen-pagina);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.pagina.izq{background:var(--papel-2)}
+.pagina.der{background:var(--papel)}
+
+/* libro cerrado (portada / contraportada) */
+.spread.simple{
+  width:var(--portada-w);aspect-ratio:var(--pagina-ratio);
+  grid-template-columns:1fr;
+}
+.spread.simple::before{display:none}
+.spread.simple .pagina{background:var(--papel)}
+
+/* encabezado corrido y numeración */
+.corrido{
+  position:absolute;top:16px;font-size:8px;color:var(--gris-3);letter-spacing:.05em;
+}
+.pagina.izq .corrido{left:var(--margen-pagina)}
+.pagina.der .corrido{right:var(--margen-pagina);text-align:right}
+.folio{position:absolute;bottom:16px;font-size:9px;color:var(--gris-3)}
+.pagina.izq .folio{left:var(--margen-pagina)}
+.pagina.der .folio{right:var(--margen-pagina)}
+
+/* ══════════════════════════════════════════════════════════
+   TIPOGRAFÍA REUTILIZABLE
+   ══════════════════════════════════════════════════════════ */
+.t-seccion{
+  font-size:13px;font-weight:600;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--tinta);margin-bottom:10px;padding-bottom:6px;position:relative;
+}
+.t-seccion::after{content:"";position:absolute;left:0;bottom:0;width:40px;height:1px;background:var(--tinta)}
+.t-proyecto{font-size:24px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--tinta);line-height:1.1}
+.st-proyecto{font-size:15px;font-style:italic;font-weight:300;color:var(--gris-1);margin-top:4px}
+.num-proyecto{font-size:48px;font-weight:600;color:var(--tinta);line-height:1;letter-spacing:-.02em}
+.cuerpo{font-size:10px;font-weight:300;color:var(--gris-1);line-height:1.5;text-align:justify;max-width:260px;hyphens:auto}
+.cuerpo + .cuerpo{margin-top:10px}
+.pie{font-size:8px;color:var(--gris-3);margin-top:6px;display:flex;justify-content:space-between}
+.ficha{font-size:9.5px;line-height:1.55;margin:14px 0}
+.ficha b{font-weight:600;color:var(--tinta)}
+.autor-mini{font-size:9px;color:var(--gris-2);letter-spacing:.05em}
+
+/* marcador de posición de imágenes */
+.ph{
+  background:var(--gris-6);color:var(--gris-3);
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:8px;letter-spacing:.12em;text-transform:uppercase;line-height:1.6;
+  padding:8px;border:1px solid var(--gris-5);overflow:hidden;
+}
+.ph img{width:100%;height:100%;object-fit:cover}
+
+/* ══════════════════════════════════════════════════════════
+   SPREAD 0 — PORTADA
+   ══════════════════════════════════════════════════════════ */
+#portada .pagina{padding:0}
+#portada .vertical{
+  position:absolute;left:14px;top:40px;writing-mode:vertical-rl;
+  font-size:7px;letter-spacing:.35em;color:var(--gris-3);text-transform:uppercase;
+}
+#portada .ilustracion{position:absolute;right:0;top:0;width:55%;height:100%}
+#portada .ilustracion svg{width:100%;height:100%}
+#portada .titulo{position:absolute;left:44px;bottom:60px}
+#portada .titulo h1{font-size:26px;font-weight:600;letter-spacing:.35em;color:var(--tinta);text-transform:uppercase;line-height:1}
+#portada .titulo p{font-size:10px;font-weight:300;margin-top:8px;color:var(--gris-1)}
+
+/* ══════════════════════════════════════════════════════════
+   SPREAD 1 — PERFIL / CV
+   ══════════════════════════════════════════════════════════ */
+#cv .retrato{width:36%;aspect-ratio:3/4;margin:10px 0 8px;flex:none}
+#cv .datos{display:grid;grid-template-columns:70px 1fr;gap:2px 10px;font-size:9px;margin:12px 0 16px;max-width:260px}
+#cv .datos dt{color:var(--gris-2)}
+#cv .datos dd{text-align:right;color:var(--gris-1)}
+#cv .bloque{margin-bottom:7px}
+#cv .pagina.izq{padding-top:30px}
+#cv .pagina.izq .cuerpo{line-height:1.4}
+#cv .pagina.izq .entrada{margin-bottom:5px}
+#cv .pagina.izq .cuerpo{font-size:9px}
+#cv .entrada{font-size:9px;margin-bottom:10px;line-height:1.45}
+#cv .entrada .fecha{font-weight:500;color:var(--tinta)}
+#cv .idioma{display:flex;align-items:center;justify-content:space-between;font-size:9px;max-width:200px;margin-bottom:3px}
+.barra{width:60px;height:2px;background:var(--gris-4);position:relative}
+.barra i{position:absolute;left:0;top:0;height:100%;background:var(--tinta)}
+#cv .der{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;padding-top:40px;padding-bottom:34px}
+#cv .der .t-seccion{font-size:11px;margin-top:4px;margin-bottom:7px}
+#cv .entrada{margin-bottom:7px;font-size:8.6px;line-height:1.4}
+#cv .datos{margin:8px 0 10px}
+#cv .pagina.izq .t-seccion{font-size:11px;margin-bottom:6px}
+#cv .software{display:grid;grid-template-columns:1fr auto 1fr auto;gap:2px 12px;font-size:9px}
+#cv .software span:nth-child(even){text-align:right;color:var(--gris-2)}
+
+/* ══════════════════════════════════════════════════════════
+   SPREAD 2 — ÍNDICE
+   ══════════════════════════════════════════════════════════ */
+#indice .pagina{padding-top:56px}
+#indice .cabecera{position:absolute;top:40px;left:var(--margen-pagina);font-size:12px;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:var(--tinta)}
+#indice .pagina.der .cabecera{left:auto;right:var(--margen-pagina);font-weight:300;font-size:9px;letter-spacing:.15em;color:var(--gris-2)}
+#indice .grilla{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  display:flex;gap:22px;z-index:3;
+}
+.tarjeta{width:150px;position:relative;display:block}
+.tarjeta .num{position:absolute;top:6px;right:8px;font-size:12px;font-weight:600;color:var(--tinta);z-index:1}
+.tarjeta .mini{width:150px;height:150px;border:1px solid var(--gris-5);transition:filter .3s}
+.tarjeta:hover .mini{filter:contrast(1.15)}
+.tarjeta .nombre{margin-top:10px;font-size:9px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--tinta);display:inline-block;border-bottom:1px solid transparent;transition:border-color .3s}
+.tarjeta:hover .nombre{border-color:var(--tinta)}
+.tarjeta .tipo{font-size:8px;color:var(--gris-3);margin-top:2px}
+
+/* ══════════════════════════════════════════════════════════
+   SPREADS DE PROYECTO — FICHA
+   ══════════════════════════════════════════════════════════ */
+.ficha-proy .izq{padding-top:52px}
+.ficha-proy .fila{display:flex;gap:22px;margin-top:6px;align-items:flex-start}
+.ficha-proy .mapa{width:190px;flex:none}
+.ficha-proy .mapa .ph{width:190px;height:190px}
+.ficha-proy .esquema{margin-top:14px;width:240px;height:70px}
+.ficha-proy .esquema svg{width:100%;height:100%}
+.ficha-proy .lista{margin-top:auto;font-size:8px;color:var(--gris-2);columns:2;column-gap:20px;max-width:340px;padding-bottom:8px}
+.ficha-proy .lista li{margin-bottom:2px}
+.ficha-proy .der{padding:30px}
+.ficha-proy .marco{
+  border:1px solid var(--tinta);flex:1;position:relative;padding:22px;
+  display:flex;align-items:center;justify-content:center;
+}
+.ficha-proy .marco .num-proyecto{position:absolute;top:18px;right:22px}
+.ficha-proy .marco .ph{width:100%;height:100%}
+
+/* ══════════════════════════════════════════════════════════
+   SPREADS DE PROYECTO — PREGUNTA
+   ══════════════════════════════════════════════════════════ */
+.pregunta .pagina{padding:0}
+.pregunta .centro{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:78%;z-index:3;text-align:center;
+}
+.pregunta svg{width:100%;height:auto;display:block}
+.pregunta .frase{font-size:11px;font-weight:300;color:var(--gris-1);margin-top:18px;letter-spacing:.03em}
+.pregunta .frase b{font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tinta)}
+
+/* ══════════════════════════════════════════════════════════
+   SPREADS DE PROYECTO — DESARROLLO
+   ══════════════════════════════════════════════════════════ */
+.desarrollo .izq{padding-top:52px}
+.desarrollo .apilados{display:flex;flex-direction:column;gap:14px;width:200px}
+.desarrollo .apilados .ph{width:200px;height:110px}
+.desarrollo .fila{display:flex;gap:22px}
+.desarrollo .fila .cuerpo{max-width:200px;padding-top:20px}
+.desarrollo .der{padding-top:52px}
+.desarrollo .grande{flex:1;display:flex;flex-direction:column}
+.desarrollo .grande .ph{flex:1}
+.desarrollo .grilla2{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1}
+.desarrollo .grilla2 figure{display:flex;flex-direction:column}
+.desarrollo .grilla2 .ph{flex:1;min-height:90px}
+.desarrollo .grilla2 figcaption{font-size:8px;color:var(--gris-3);margin-top:5px}
+
+/* ══════════════════════════════════════════════════════════
+   SPREAD FINAL — CONTACTO
+   ══════════════════════════════════════════════════════════ */
+#contacto .pagina{align-items:center;justify-content:center;text-align:center}
+#contacto h2{font-size:14px;font-weight:500;letter-spacing:.4em;color:var(--tinta)}
+#contacto .lineas{margin-top:14px;font-size:9px;color:var(--gris-2);line-height:1.9}
+#contacto .redes{display:flex;gap:16px;justify-content:center;margin-top:12px}
+#contacto .redes a{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--gris-2)}
+#contacto .redes svg{width:12px;height:12px;stroke:var(--gris-2);fill:none;stroke-width:1}
+#contacto .copy{position:absolute;bottom:26px;left:0;right:0;font-size:7px;color:var(--gris-3);letter-spacing:.1em}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════ */
+@media (max-width:1099px) and (min-width:700px){
+  .spread-wrap{padding:40px 0}
+  .spread{max-width:none}
+}
+@media (max-width:699px){
+  html{scroll-snap-type:none}
+  .spread-wrap{padding:40px 16px;min-height:0}
+  .spread{
+    grid-template-columns:1fr;aspect-ratio:auto;box-shadow:none;background:transparent;
+    gap:40px;width:100%;
+  }
+  .spread.visible{transform:none}
+  .spread::before{display:none}
+  .pagina{min-height:calc(100vw * 1.2);aspect-ratio:auto;box-shadow:var(--sombra);padding:64px 28px 44px;width:100%;overflow:visible}
+  #cv .retrato{width:60%}
+  .t-proyecto{font-size:17px}
+  .num-proyecto{font-size:36px}
+  .ficha-proy .der{padding:44px 28px;min-height:calc(100vw * 1.2)}
+  .ficha-proy .marco{min-height:60vw}
+  .desarrollo .grilla2 .ph{min-height:120px}
+  .pregunta .pagina.der{min-height:70vw}
+  .pregunta .centro{position:absolute}
+  .spread.simple{width:min(100%,360px);aspect-ratio:auto}
+  .pagina.izq .corrido,.pagina.izq .folio{left:28px}
+  .pagina.der .corrido,.pagina.der .folio{right:28px}
+  #indice .grilla{position:static;transform:none;flex-wrap:wrap;justify-content:center;gap:16px;margin-top:20px}
+  #indice .pagina.der{display:none}
+  .tarjeta,.tarjeta .mini{width:120px}.tarjeta .mini{height:120px}
+  .pregunta .pagina.izq{display:none}
+  .pregunta .centro{width:86%}
+  #cv .der{grid-template-columns:1fr}
+  .ficha-proy .fila{flex-direction:column}
+  .desarrollo .fila{flex-direction:column}
+  #btn-pdf{top:14px;right:14px}
+  #indicador{bottom:14px;right:14px}
+}
+@media print{
+  #progreso,#btn-pdf,#indicador{display:none}
+  body{background:#fff}
+  .spread-wrap{min-height:0;padding:0;page-break-after:always}
+  .spread{opacity:1;transform:none;box-shadow:none}
+}
+</style>
+</head>
+
+<body>
+
+<!-- UI fija -->
+<div id="progreso" aria-hidden="true"></div>
+<button id="btn-pdf" type="button" title="Imprimir o guardar como PDF">Descargar PDF</button>
+<div id="indicador" aria-live="polite">Página 01 / 00</div>
+
+<header class="spread-wrap">
+  <!-- ════════════════════════════════════════════
+       SPREAD 0 — PORTADA (libro cerrado)
+       Reemplaza: nombre del autor y año.
+       ════════════════════════════════════════════ -->
+  <section class="spread simple" id="portada" aria-label="Portada">
+    <div class="pagina">
+      <span class="vertical">Portafolio 2026</span>
+      <div class="ilustracion" aria-hidden="true">
+        <svg viewBox="0 0 264 380" fill="none" stroke="#777" stroke-width=".6" stroke-linejoin="round">
+          <!-- grilla isométrica de fondo -->
+          <g id="iso" opacity=".55">
+            <path d="M0 60 L264 212 M0 90 L264 242 M0 120 L264 272 M0 150 L264 302 M0 180 L264 332 M0 210 L264 362 M0 240 L264 392"/>
+            <path d="M264 60 L0 212 M264 90 L0 242 M264 120 L0 272 M264 150 L0 302 M264 180 L0 332 M264 210 L0 362 M264 30 L0 182 M264 0 L0 152"/>
+          </g>
+          <!-- bloques / módulos de interfaz en axonometría -->
+          <g stroke="#666">
+            <path d="M92 150 L152 116 L212 150 L152 184 Z"/>
+            <path d="M92 150 L92 214 L152 248 L212 214 L212 150 M152 184 L152 248"/>
+            <path d="M104 136 L104 96 L164 62 L224 96 L224 136 M164 62 L164 102 M104 96 L164 130 L224 96 M164 130 L164 170"/>
+            <path d="M40 200 L70 183 L100 200 L70 217 Z M40 200 L40 232 L70 249 L100 232 L100 200 M70 217 L70 249"/>
+            <path d="M176 232 L206 215 L236 232 L206 249 Z M176 232 L176 258 L206 275 L236 258 L236 232 M206 249 L206 275"/>
+          </g>
+          <!-- líneas de datos -->
+          <g stroke="#888">
+            <path d="M120 300 L150 282 L180 296 L210 270 L240 284"/>
+            <path d="M120 316 L150 300 L180 312 L210 288 L240 300"/>
+            <path d="M120 332 L150 318 L180 328 L210 306 L240 316"/>
+            <circle cx="150" cy="282" r="1.4"/><circle cx="210" cy="270" r="1.4"/><circle cx="180" cy="312" r="1.4"/>
+          </g>
+          <!-- cotas -->
+          <g stroke="#999" stroke-width=".4">
+            <path d="M30 120 L30 260 M26 120 L34 120 M26 260 L34 260"/>
+            <path d="M92 330 L212 330 M92 326 L92 334 M212 326 L212 334"/>
+          </g>
+        </svg>
+      </div>
+      <div class="titulo">
+        <h1>Portfolio</h1>
+        <p>Leider Tisnado Mego</p>
+      </div>
+    </div>
+  </section>
+</header>
+
+<main>
+
+<!-- ════════════════════════════════════════════
+     SPREAD 1 — PERFIL / CV
+     Reemplaza: foto (.retrato), datos, educación,
+     experiencia, cursos y softwares.
+     ════════════════════════════════════════════ -->
+<div class="spread-wrap">
+<section class="spread" id="cv" aria-label="Perfil y currículum" data-titulo="Perfil">
+  <div class="pagina izq">
+    <span class="autor-mini">Leider Tisnado Mego</span>
+
+    <!-- FOTO: reemplaza el div .ph por <img src="img/retrato.jpg" alt="Retrato"> -->
+    <div class="retrato ph">Foto de retrato<br>600 × 800</div>
+
+    <p class="cuerpo">Hola. Para este portafolio he seleccionado los proyectos que, como profesional de control de costos y desarrollador independiente, me han permitido unir dos mundos: la operación diaria de un negocio y la tecnología que la hace más clara. Me interesa cómo una herramienta bien diseñada cambia la forma en que un equipo decide y trabaja.</p>
+
+    <dl class="datos">
+      <dt>Edad</dt><dd>[XX]</dd>
+      <dt>Origen</dt><dd>Lima, Perú</dd>
+      <dt>Contacto</dt><dd>[correo@ejemplo.com]</dd>
+      <dt>Teléfono</dt><dd>[+51 999 999 999]</dd>
+    </dl>
+
+    <div class="bloque">
+      <h2 class="t-seccion">Educación</h2>
+      <div class="entrada"><span class="fecha">2014 – 2019</span><br>Bachiller en Administración de Empresas<br>Universidad Inca Garcilaso de la Vega</div>
+      <div class="entrada"><span class="fecha">2023</span><br>Especialización en Supply Chain Management<br>Escuela de Postgrado UPC</div>
+    </div>
+
+    <div class="bloque">
+      <h2 class="t-seccion">Idiomas</h2>
+      <div class="idioma"><span>Español nativo</span><span class="barra"><i style="width:100%"></i></span></div>
+      <div class="idioma"><span>Inglés (intermedio)</span><span class="barra"><i style="width:55%"></i></span></div>
+    </div>
+
+    <div class="bloque">
+      <h2 class="t-seccion">Voluntariado</h2>
+      <div class="entrada"><span class="fecha">2022 – 2024</span><br>Mentoría en herramientas digitales<br>Programa de formación para pequeños negocios de barrio</div>
+    </div>
+  </div>
+
+  <div class="pagina der">
+    <div>
+      <h2 class="t-seccion">Experiencia académica</h2>
+      <div class="entrada"><span class="fecha">2019</span><br>Tesis de grado: gestión de inventarios en servicios de alimentación<br>Universidad Inca Garcilaso de la Vega</div>
+      <div class="entrada"><span class="fecha">2023</span><br>Proyecto final: rediseño del flujo de compras y almacén<br>Escuela de Postgrado UPC</div>
+      <div class="entrada"><span class="fecha">2024</span><br>Curso: analítica de datos aplicada a operaciones<br>Formación en línea, certificado</div>
+
+      <h2 class="t-seccion">Experiencia profesional</h2>
+      <div class="entrada"><span class="fecha">2021 – Presente</span><br>Hotel de cinco estrellas, Lima<br>Rol: Analista de Control de Costos (Alimentos y Bebidas)<br>Objetivo: control de inventarios, costeo de recetas y reportes de consumo con SAP Business One y Oracle MICROS Simphony.</div>
+      <div class="entrada"><span class="fecha">2022 – Presente</span><br>LTM Soluciones Digitales, Lima<br>Rol: Desarrollador independiente<br>Objetivo: diseño y desarrollo de aplicaciones web, plataformas en Firebase y herramientas de automatización para negocios.</div>
+      <div class="entrada"><span class="fecha">2019 – 2021</span><br>Cadena de restaurantes, Lima<br>Rol: Asistente de costos<br>Objetivo: toma de inventarios, conciliación de compras y análisis de mermas.</div>
+    </div>
+
+    <div>
+      <h2 class="t-seccion">Comisiones independientes</h2>
+      <div class="entrada"><span class="fecha">2025</span><br>Plataforma SaaS de control de costos para hoteles y restaurantes<br>Ubicación: Lima, Perú</div>
+      <div class="entrada"><span class="fecha">2026</span><br>App de rastreo en tiempo real para empresa de delivery<br>Ubicación: Lima, Perú</div>
+      <div class="entrada"><span class="fecha">2025</span><br>Sitio web y catálogo digital para tienda de abarrotes<br>Ubicación: Lima, Perú</div>
+
+      <h2 class="t-seccion">Cursos y certificaciones</h2>
+      <div class="entrada"><span class="fecha">2023</span><br>Especialización en Supply Chain Management<br>Escuela de Postgrado UPC</div>
+      <div class="entrada"><span class="fecha">2024</span><br>Desarrollo web con JavaScript y Firebase<br>Certificado en línea</div>
+      <div class="entrada"><span class="fecha">2024</span><br>Excel avanzado y automatización con VBA<br>Certificado en línea</div>
+
+      <h2 class="t-seccion">Concursos</h2>
+      <div class="entrada"><span class="fecha">2025</span><br>Hackatón de soluciones para gastronomía<br>Propuesta: control de mermas con datos en tiempo real</div>
+
+      <h2 class="t-seccion">Softwares</h2>
+      <div class="software">
+        <span>Excel</span><span>95%</span><span>HTML / CSS</span><span>90%</span>
+        <span>SAP B1</span><span>85%</span><span>JavaScript</span><span>80%</span>
+        <span>MICROS</span><span>85%</span><span>Firebase</span><span>80%</span>
+        <span>Power BI</span><span>70%</span><span>Python</span><span>60%</span>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SPREAD 2 — ÍNDICE DE PROYECTOS
+     Las tarjetas se generan desde PROYECTOS (JS).
+     ════════════════════════════════════════════ -->
+<div class="spread-wrap">
+<section class="spread" id="indice" aria-label="Índice de proyectos" data-titulo="Índice">
+  <div class="pagina izq"><span class="cabecera">Índice</span></div>
+  <div class="pagina der"><span class="cabecera">Proyectos seleccionados</span></div>
+  <nav class="grilla" id="grilla-indice" aria-label="Proyectos"></nav>
+</section>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SPREADS DE PROYECTO (01–05)
+     Se generan aquí desde el arreglo PROYECTOS del
+     script inferior. Edita los textos e imágenes ahí.
+     ════════════════════════════════════════════ -->
+<div id="proyectos"></div>
+
+</main>
+
+<footer class="spread-wrap">
+  <!-- ════════════════════════════════════════════
+       SPREAD FINAL — CONTACTO (contraportada)
+       Reemplaza: correo, teléfono y enlaces.
+       ════════════════════════════════════════════ -->
+  <section class="spread simple" id="contacto" aria-label="Contacto">
+    <div class="pagina">
+      <h2>contacto</h2>
+      <div class="lineas">
+        [correo@ejemplo.com]<br>
+        [+51 999 999 999]<br>
+        Lima, Perú
+      </div>
+      <div class="redes">
+        <a href="#" aria-label="Behance"><svg viewBox="0 0 24 24"><path d="M3 5h6a3 3 0 0 1 0 6H3zM3 11h7a3.5 3.5 0 0 1 0 7H3zM15 13h7a3.5 3.5 0 0 0-7 0zM15 13a3.5 3.5 0 0 0 6.5 2M16 6h5"/></svg>behance</a>
+        <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18"/><path d="M7 10v7M7 7v.5M11 17v-7M11 13a3 3 0 0 1 6 0v4"/></svg>linkedin</a>
+        <a href="#" aria-label="GitHub"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-3 17.5v-2.4c-2.5.5-3-1.2-3-1.2-.4-1-1-1.3-1-1.3-.8-.6.1-.6.1-.6.9.1 1.4 1 1.4 1 .8 1.4 2.2 1 2.7.8.1-.6.3-1 .6-1.2-2.1-.2-4.2-1-4.2-4.5 0-1 .3-1.8.9-2.4-.1-.3-.4-1.2.1-2.5 0 0 .8-.2 2.5.9a8.7 8.7 0 0 1 4.6 0c1.7-1.1 2.5-.9 2.5-.9.5 1.3.2 2.2.1 2.5.6.6.9 1.4.9 2.4 0 3.5-2.1 4.3-4.2 4.5.4.3.7.9.7 1.8v2.9A9 9 0 0 0 12 3z"/></svg>github</a>
+      </div>
+      <div class="copy">© Todos los derechos reservados · 2026</div>
+    </div>
+  </section>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   DATOS DEL AUTOR — reemplaza aquí
+   ══════════════════════════════════════════════════════════ */
+const AUTOR = 'Leider Tisnado Mego';
+const ANIO  = '2026';
+
+/* ══════════════════════════════════════════════════════════
+   PROYECTOS — cada objeto genera 3 spreads:
+   ficha, pregunta y desarrollo.
+   Para las imágenes: pon la ruta en `img` (o deja "" para
+   mostrar el marcador de posición gris).
+   ══════════════════════════════════════════════════════════ */
+const PROYECTOS = [
+  {
+    num:'01',
+    titulo:'GastroControl Pro',
+    subtitulo:'Plataforma SaaS de control de costos',
+    tipo:'Aplicación web · SaaS',
+    ubicacion:'Lima, Perú (nube)',
+    anio:'2025',
+    duracion:'8 meses',
+    colaboracion:'Proyecto propio, LTM Soluciones Digitales',
+    rol:'Diseño, desarrollo y despliegue · Firebase, JavaScript, HTML/CSS',
+    parrafos:[
+      'El proyecto nace de una necesidad observada durante años en operaciones de alimentos y bebidas: el costo real de una receta rara vez coincide con el costo teórico, y la diferencia se descubre tarde. GastroControl Pro centraliza recetas, inventarios y compras en una sola plataforma en la nube, pensada para hoteles y restaurantes de cualquier tamaño.',
+      'La interfaz prioriza la lectura rápida de indicadores: costo por plato, margen, mermas y rotación de insumos. Cada módulo se diseñó con la misma lógica de columnas estrechas y jerarquía tipográfica que un reporte impreso, para que el equipo de costos reconozca de inmediato lo que está viendo.'
+    ],
+    lista:['Módulo de recetas y escandallos','Inventario por almacén','Compras y proveedores','Panel de indicadores','Usuarios y roles','Exportación a Excel'],
+    pregunta:['¿Es posible ','optimizar',' los costos de una cocina mediante datos?'],
+    desarrollo:[
+      'El flujo de datos se modeló primero en papel: qué entra (facturas, inventarios), qué se transforma (recetas) y qué sale (costos, reportes). Ese esquema se convirtió luego en colecciones de Firestore.',
+      'Las vistas se construyeron sin frameworks, con componentes ligeros en JavaScript, para mantener el tiempo de carga bajo en conexiones lentas de cocina y almacén.'
+    ],
+    pies:['Diagrama de arquitectura','Modelo de datos','Panel de indicadores','Vista de recetas'],
+    img:{mapa:'',principal:'',dev:['','','','']}
+  },
+  {
+    num:'02',
+    titulo:'Rastreo Delivery',
+    subtitulo:'Seguimiento en tiempo real de pedidos',
+    tipo:'Aplicación móvil web · Mapas',
+    ubicacion:'Lima, Perú',
+    anio:'2026',
+    duracion:'4 meses',
+    colaboracion:'Empresa de reparto local',
+    rol:'Desarrollo full-stack · Firebase Realtime Database, geolocalización, JavaScript',
+    parrafos:[
+      'Una empresa de reparto con motorizados necesitaba que sus clientes supieran dónde estaba su pedido sin llamar por teléfono. La solución fue una aplicación web en la que cada repartidor comparte su ubicación y el cliente, con solo un número de pedido, sigue el recorrido en un mapa.',
+      'El reto principal fue la precisión y el consumo de batería: se definió una frecuencia de actualización variable según la velocidad del repartidor, y un estado claro para cada etapa del pedido, desde la recolección hasta la entrega.'
+    ],
+    lista:['Panel del repartidor','Vista de seguimiento del cliente','Estados del pedido','Historial de rutas','Notificaciones de llegada'],
+    pregunta:['¿Cómo ','visibilizar',' un pedido que está en movimiento?'],
+    desarrollo:[
+      'Se diagramaron los tres actores del sistema —negocio, repartidor y cliente— y los datos que cada uno necesita ver, evitando exponer más información de la necesaria.',
+      'La interfaz del cliente se redujo a una sola pantalla: mapa, estado y tiempo estimado. Todo lo demás vive en el panel del negocio.'
+    ],
+    pies:['Diagrama de actores','Flujo de estados','Pantalla de seguimiento','Panel del repartidor'],
+    img:{mapa:'',principal:'',dev:['','','','']}
+  },
+  {
+    num:'03',
+    titulo:'Dashboard de Compras',
+    subtitulo:'Análisis de compras e inventario',
+    tipo:'Analítica · Web app',
+    ubicacion:'Lima, Perú',
+    anio:'2026',
+    duracion:'5 meses',
+    colaboracion:'Área de costos de una operación hotelera',
+    rol:'Análisis y desarrollo · Vite, JavaScript, Firebase Hosting, Excel',
+    parrafos:[
+      'Un libro de Excel con más de treinta hojas concentraba todo el análisis de compras e inventario de una operación de alimentos y bebidas. Funcionaba, pero era lento, frágil y solo una persona sabía usarlo. El proyecto migró ese análisis a una aplicación web con los mismos indicadores, pero navegables.',
+      'Cada hoja se tradujo en una vista: compras por proveedor, evolución de precios, rotación por almacén y comparación contra presupuesto. Las tablas se acompañan de gráficos en escala de grises que priorizan la tendencia sobre el adorno.'
+    ],
+    lista:['Compras por proveedor','Evolución de precios','Rotación de inventario','Comparación con presupuesto','Carga de datos desde Excel'],
+    pregunta:['¿Qué revela un ','inventario',' cuando por fin se mide?'],
+    desarrollo:[
+      'El primer paso fue auditar el Excel original: qué fórmulas se repetían, qué hojas ya nadie usaba y qué indicadores realmente se consultaban cada semana.',
+      'Con ese mapa se definió una estructura de datos única desde la que se calculan todas las vistas, eliminando la duplicación de cifras.'
+    ],
+    pies:['Mapa de hojas originales','Estructura de datos','Vista de compras','Vista de rotación'],
+    img:{mapa:'',principal:'',dev:['','','','']}
+  },
+  {
+    num:'04',
+    titulo:'Automatización Excel',
+    subtitulo:'Herramientas para el área de costos',
+    tipo:'Automatización · Excel y HTML',
+    ubicacion:'Lima, Perú',
+    anio:'2024 – 2025',
+    duracion:'Continuo',
+    colaboracion:'Equipo de costos y almacén',
+    rol:'Diseño de procesos y desarrollo · Excel, VBA, HTML/JavaScript',
+    parrafos:[
+      'Un conjunto de herramientas pequeñas que resuelven tareas repetitivas del día a día: conciliación de facturas contra órdenes de compra, formatos de toma de inventario, cálculo de mermas y generación de reportes de consumo. Cada herramienta nació de una hora que se perdía todas las semanas.',
+      'Algunas viven en Excel con macros; otras, en un archivo HTML de una sola página que funciona sin instalación y sin internet. La regla común: que cualquier persona del equipo pueda usarlas sin explicación.'
+    ],
+    lista:['Conciliación de facturas','Formato de inventario','Calculadora de mermas','Reporte de consumo','Plantilla de costeo'],
+    pregunta:['¿Puede una hoja de cálculo ','automatizar',' una rutina completa?'],
+    desarrollo:[
+      'Antes de programar, cada proceso se dibujó como un diagrama de pasos con sus entradas y salidas, para identificar en qué punto exacto se producía el error humano.',
+      'Las herramientas se entregaron con un manual de una página y se ajustaron durante las primeras semanas de uso real.'
+    ],
+    pies:['Diagrama de proceso','Formato de inventario','Herramienta de conciliación','Reporte generado'],
+    img:{mapa:'',principal:'',dev:['','','','']}
+  },
+  {
+    num:'05',
+    titulo:'Tienda Leitime',
+    subtitulo:'Sitio web y catálogo para negocio de barrio',
+    tipo:'Sitio web · Catálogo digital',
+    ubicacion:'Lima, Perú',
+    anio:'2025',
+    duracion:'2 meses',
+    colaboracion:'Negocio propio de abarrotes, frutas y verduras',
+    rol:'Diseño y desarrollo · HTML, CSS, JavaScript, WhatsApp API',
+    parrafos:[
+      'Un negocio de abarrotes, frutas y verduras necesitaba un lugar donde sus clientes vieran productos y precios actualizados y pudieran hacer pedidos sin complicaciones. El sitio se diseñó como un catálogo limpio, con fotografías en fondo neutro y un botón de pedido directo por WhatsApp.',
+      'El catálogo se administra desde una hoja de cálculo sencilla que alimenta la página, de modo que el negocio actualiza precios sin tocar código. Todo el sitio pesa menos de un megabyte y carga en segundos en un celular básico.'
+    ],
+    lista:['Catálogo por categorías','Precios actualizables','Pedido por WhatsApp','Horarios y ubicación','Versión móvil'],
+    pregunta:['¿Cómo ','acercar',' un negocio de barrio a la web?'],
+    desarrollo:[
+      'Se fotografiaron los productos con un mismo encuadre y fondo para lograr un catálogo uniforme, y se definió una grilla de tres columnas que se convierte en una sola en el celular.',
+      'El botón de pedido arma el mensaje de WhatsApp con los productos elegidos, evitando cualquier formulario o registro.'
+    ],
+    pies:['Grilla del catálogo','Ficha de producto','Flujo de pedido','Versión móvil'],
+    img:{mapa:'',principal:'',dev:['','','','']}
+  }
+];
+
+/* ══════════════════════════════════════════════════════════
+   GENERADORES
+   ══════════════════════════════════════════════════════════ */
+const ph = (texto, src, clase='') =>
+  `<div class="ph ${clase}">${src ? `<img src="${src}" alt="${texto}" loading="lazy">` : texto}</div>`;
+
+/* esquema lineal pequeño (ficha) — varía según el índice */
+const esquema = i => `
+<svg viewBox="0 0 240 70" fill="none" stroke="#777" stroke-width=".6" aria-hidden="true">
+  <rect x="10" y="${14+i*2}" width="220" height="${42-i*2}"/>
+  <path d="M10 ${30+i*3} H230 M10 ${44+i} H230"/>
+  <path d="M${60+i*8} 14 V56 M${120+i*6} 14 V56 M${180-i*4} 14 V56"/>
+  <path d="M20 62 L40 50 L70 58 L100 44 L130 52 L160 40 L190 48 L220 36" stroke="#999"/>
+  <path d="M10 66 H230" stroke="#bbb" stroke-dasharray="2 2"/>
+</svg>`;
+
+/* ilustración grande (pregunta): sección/corte esquemático */
+const seccion = i => {
+  const pisos = 3 + (i % 3);
+  let f = '';
+  for (let p = 0; p < pisos; p++) {
+    const y = 150 - p * 26;
+    f += `<path d="M120 ${y} H520" /><path d="M${130+p*10} ${y} V${y-26}" stroke-dasharray="1 2"/>`;
+  }
+  return `
+<svg viewBox="0 0 640 220" fill="none" stroke="#777" stroke-width=".6" stroke-linejoin="round" aria-hidden="true">
+  <path d="M20 176 H620" stroke="#444"/>
+  <path d="M20 180 H620 M20 184 H620" stroke="#ccc"/>
+  <g>${f}</g>
+  <path d="M120 176 V${150-(pisos-1)*26-18} H520 V176"/>
+  <path d="M120 ${150-(pisos-1)*26-18} L200 ${120-(pisos-1)*26} H440 L520 ${150-(pisos-1)*26-18}" stroke="#555"/>
+  <path d="M150 176 L190 ${150-(pisos-2)*26} M190 ${150-(pisos-2)*26} L230 176" stroke="#999"/>
+  <path d="M330 176 V${150-(pisos-1)*26} M300 176 V${150-(pisos-1)*26} M360 176 V${150-(pisos-1)*26}" stroke="#999"/>
+  <g stroke="#bbb" stroke-width=".4">
+    <path d="M60 176 V${150-(pisos-1)*26-18} M56 176 H64 M56 ${150-(pisos-1)*26-18} H64"/>
+    <path d="M120 200 H520 M120 196 V204 M520 196 V204"/>
+  </g>
+  <g stroke="#aaa"><path d="M540 176 c0-20 10-30 20-30 s20 10 20 30 M560 176 v-30"/>
+  <path d="M40 176 c0-14 8-22 16-22 s16 8 16 22 M56 176 v-22"/></g>
+</svg>`;
+};
+
+const spreadFicha = p => `
+<div class="spread-wrap">
+<article class="spread ficha-proy" id="proyecto-${p.num}" data-titulo="${p.titulo}">
+  <div class="pagina izq">
+    <h2 class="t-proyecto">${p.titulo}</h2>
+    <p class="st-proyecto">${p.subtitulo}</p>
+    <div class="ficha">
+      <b>Ubicación:</b> ${p.ubicacion}<br>
+      <b>Año:</b> ${p.anio}<br>
+      <b>Duración:</b> ${p.duracion}<br>
+      <b>Colaboración:</b> ${p.colaboracion}<br>
+      <b>Rol / Tecnologías:</b> ${p.rol}
+    </div>
+    <div class="fila">
+      <figure class="mapa">
+        ${ph(`Mapa o diagrama<br>proyecto ${p.num}<br>600 × 600`, p.img.mapa)}
+        <figcaption class="pie"><span>Plano de ubicación</span><span>Escala 1:1000</span></figcaption>
+      </figure>
+      <div>
+        <p class="cuerpo">${p.parrafos[0]}</p>
+        <p class="cuerpo">${p.parrafos[1]}</p>
+        <div class="esquema">${esquema(+p.num)}</div>
+      </div>
+    </div>
+    <ol class="lista">${p.lista.map((l,i)=>`<li>${i+1}. ${l}</li>`).join('')}</ol>
+  </div>
+  <div class="pagina der">
+    <div class="marco">
+      <span class="num-proyecto">${p.num}</span>
+      ${ph(`Imagen principal<br>proyecto ${p.num}<br>1200 × 900`, p.img.principal)}
+    </div>
+  </div>
+</article>
+</div>`;
+
+const spreadPregunta = p => `
+<div class="spread-wrap">
+<article class="spread pregunta" data-titulo="${p.titulo}">
+  <div class="pagina izq"></div>
+  <div class="pagina der"></div>
+  <div class="centro">
+    ${seccion(+p.num)}
+    <p class="frase">${p.pregunta[0]}<b>${p.pregunta[1]}</b>${p.pregunta[2]}</p>
+  </div>
+</article>
+</div>`;
+
+const spreadDesarrollo = p => `
+<div class="spread-wrap">
+<article class="spread desarrollo" data-titulo="${p.titulo}">
+  <div class="pagina izq">
+    <div class="fila">
+      <div class="apilados">
+        ${ph(`${p.pies[0]}<br>800 × 440`, p.img.dev[0])}
+        ${ph(`${p.pies[1]}<br>800 × 440`, p.img.dev[1])}
+        ${ph(`Detalle adicional<br>800 × 440`, '')}
+      </div>
+      <div>
+        <p class="cuerpo">${p.desarrollo[0]}</p>
+        <p class="cuerpo">${p.desarrollo[1]}</p>
+      </div>
+    </div>
+  </div>
+  <div class="pagina der">
+    <div class="grilla2">
+      <figure>${ph(`${p.pies[2]}<br>900 × 600`, p.img.dev[2])}<figcaption>${p.pies[2]}</figcaption></figure>
+      <figure>${ph(`${p.pies[3]}<br>900 × 600`, p.img.dev[3])}<figcaption>${p.pies[3]}</figcaption></figure>
+      <figure>${ph(`Vista de detalle<br>900 × 600`, '')}<figcaption>Vista de detalle</figcaption></figure>
+      <figure>${ph(`Resultado final<br>900 × 600`, '')}<figcaption>Resultado final</figcaption></figure>
+    </div>
+  </div>
+</article>
+</div>`;
+
+/* índice */
+document.getElementById('grilla-indice').innerHTML = PROYECTOS.map(p => `
+  <a class="tarjeta" href="#proyecto-${p.num}">
+    <span class="num">${p.num}</span>
+    <div class="mini">${ph(`Miniatura<br>${p.num}`, p.img.principal)}</div>
+    <span class="nombre">${p.titulo}</span>
+    <div class="tipo">${p.tipo}</div>
+  </a>`).join('');
+
+/* spreads de proyecto */
+document.getElementById('proyectos').innerHTML =
+  PROYECTOS.map(p => spreadFicha(p) + spreadPregunta(p) + spreadDesarrollo(p)).join('');
+
+/* ══════════════════════════════════════════════════════════
+   ENCABEZADOS CORRIDOS Y NUMERACIÓN DE PÁGINAS
+   ══════════════════════════════════════════════════════════ */
+const spreads = [...document.querySelectorAll('.spread')];
+let folio = 1;
+const totalPaginas = spreads.reduce((n,s)=> n + (s.classList.contains('simple') ? 1 : 2), 0);
+
+spreads.forEach(s => {
+  if (s.classList.contains('simple')) { folio++; return; }
+  const titulo = s.dataset.titulo || '';
+  const izq = s.querySelector('.pagina.izq');
+  const der = s.querySelector('.pagina.der');
+  izq.insertAdjacentHTML('beforeend',
+    `<span class="corrido">${ANIO} · Proyectos seleccionados · ${titulo.toUpperCase()}</span><span class="folio">| ${folio}</span>`);
+  der.insertAdjacentHTML('beforeend',
+    `<span class="corrido">${AUTOR}</span><span class="folio">${folio+1} |</span>`);
+  s.dataset.folio = folio;
+  folio += 2;
+});
+
+/* ══════════════════════════════════════════════════════════
+   INTERACCIÓN
+   ══════════════════════════════════════════════════════════ */
+const indicador = document.getElementById('indicador');
+const pad = n => String(n).padStart(2,'0');
+
+/* animación de entrada + indicador de página */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      if (e.intersectionRatio > .5) {
+        const idx = spreads.indexOf(e.target);
+        const pag = idx === 0 ? 1 : (e.target.dataset.folio ? +e.target.dataset.folio : totalPaginas);
+        indicador.textContent = `Página ${pad(pag)} / ${pad(totalPaginas)}`;
+      }
+    }
+  });
+}, {threshold:[0,.55]});
+spreads.forEach(s => io.observe(s));
+
+/* barra de progreso */
+const progreso = document.getElementById('progreso');
+const actualizarProgreso = () => {
+  const max = document.documentElement.scrollHeight - innerHeight;
+  progreso.style.width = (max > 0 ? (scrollY / max) * 100 : 0) + '%';
+};
+addEventListener('scroll', actualizarProgreso, {passive:true});
+
+/* teclado: salto de spread en spread */
+const wraps = [...document.querySelectorAll('.spread-wrap')];
+const actualIndex = () => {
+  const c = innerHeight / 2;
+  let best = 0, dist = Infinity;
+  wraps.forEach((w,i) => {
+    const r = w.getBoundingClientRect();
+    const d = Math.abs(r.top + r.height/2 - c);
+    if (d < dist) { dist = d; best = i; }
+  });
+  return best;
+};
+addEventListener('keydown', e => {
+  const abajo = ['ArrowDown','PageDown'].includes(e.key);
+  const arriba = ['ArrowUp','PageUp'].includes(e.key);
+  if (!abajo && !arriba) return;
+  e.preventDefault();
+  const i = Math.min(wraps.length-1, Math.max(0, actualIndex() + (abajo ? 1 : -1)));
+  wraps[i].scrollIntoView({behavior:'smooth', block:'center'});
+});
+
+/* botón PDF */
+document.getElementById('btn-pdf').addEventListener('click', () => window.print());
+
+/* escala proporcional en tablet (700–1099px) */
+const escalar = () => {
+  const w = innerWidth;
+  const escala = (w >= 700 && w < 1100) ? Math.min(1, (w - 40) / 1000) : 1;
+  document.documentElement.style.setProperty('--escala', escala);
+  document.querySelectorAll('.spread-wrap').forEach(wr => {
+    const s = wr.querySelector('.spread');
+    const alto = s.getBoundingClientRect().height / (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--escala')) || 1);
+    wr.style.minHeight = escala < 1 ? (alto * escala + 80) + 'px' : '';
+  });
+};
+addEventListener('resize', escalar);
+addEventListener('load', () => { escalar(); actualizarProgreso(); });
+</script>
+</body>
+</html>
