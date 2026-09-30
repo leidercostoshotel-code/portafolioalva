@@ -1,6 +1,6 @@
-# Portafolio · Leider Tisnado Mego
+# Portafolio · Clara Alva Mas
 
-Portafolio editorial en HTML, CSS y JavaScript puro, publicado en **Firebase Hosting**
+Portafolio de arquitectura en HTML, CSS y JavaScript puro, publicado en **Firebase Hosting**
 con un **panel de administración** (`/admin`) para editar textos, proyectos e imágenes
 sin tocar código.
 
