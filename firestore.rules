@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // El portafolio lo puede leer cualquiera (es público en internet),
+    // pero solo lo escribe un usuario que inició sesión en /admin.html.
+    match /portafolio/{documento} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /{otro=**} {
+      allow read, write: if false;
+    }
+  }
+}
