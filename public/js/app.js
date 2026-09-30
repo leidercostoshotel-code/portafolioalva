@@ -88,7 +88,7 @@ const spreadPortada = d => `
     <div class="pagina">
       <span class="vertical">Portafolio ${esc(d.anio)}</span>
       <div class="ilustracion" aria-hidden="true">${SVG_PORTADA}</div>
-      <div class="titulo"><h1>${esc(d.tituloPortada || 'Portfolio')}</h1><p>${esc(d.autor)}</p></div>
+      <div class="titulo"><h1>${esc(d.tituloPortada || 'Portfolio')}</h1><p>${esc(d.autor)}<span class="anio">${esc(d.anio)}</span></p></div>
     </div>
   </section>
 </header>`;
@@ -319,7 +319,7 @@ function iniciarInteraccion(d) {
   /* escala proporcional en tablet (700–1099px) */
   const escalar = () => {
     const w = innerWidth;
-    const escala = (w >= 700 && w < 1100) ? Math.min(1, (w - 40) / 1000) : 1;
+    const escala = (w >= 900 && w < 1100) ? Math.min(1, (w - 40) / 1000) : 1;
     document.documentElement.style.setProperty('--escala', escala);
     wraps.forEach(wr => {
       const s = wr.querySelector('.spread');
