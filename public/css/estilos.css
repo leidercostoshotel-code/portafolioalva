@@ -2,9 +2,9 @@
    VARIABLES GLOBALES
    ══════════════════════════════════════════════════════════ */
 :root{
-  --fondo:#E8E8E8;
-  --papel:#FFFFFF;
-  --papel-2:#FAFAFA;
+  --fondo:#d4d4d4;
+  --papel:#f6f6f4;              /* blanco cálido de papel impreso */
+  --papel-2:#f6f6f4;
   --tinta:#111111;
   --gris-1:#333333;
   --gris-2:#666666;
@@ -16,27 +16,28 @@
   --fuente:'Jost','Montserrat',system-ui,sans-serif;
 
   --spread-w:1000px;           /* ancho del libro abierto */
-  --spread-ratio:2 / 1.35;     /* proporción doble página */
-  --pagina-ratio:1 / 1.414;    /* proporción A4 vertical */
+  --spread-ratio:2 / 1.29;     /* dos páginas A4 (alto/ancho 1.29) */
+  --pagina-ratio:1 / 1.29;     /* página vertical */
   --portada-w:480px;           /* ancho del libro cerrado */
-  --margen-pagina:40px;
-  --separacion:100px;          /* gris entre spreads */
-  --sombra:0 30px 60px rgba(0,0,0,.18);
+  --margen-pagina:52px;        /* lateral */
+  --margen-vertical:44px;      /* arriba y abajo */
+  --separacion:140px;          /* gris entre spreads */
+  --sombra:0 35px 70px rgba(0,0,0,.40),0 12px 24px rgba(0,0,0,.22);
   --escala:1;                  /* ajustada por JS en tablet */
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-snap-type:y proximity;scroll-behavior:smooth}
 body{
-  background:var(--fondo);
+  background:radial-gradient(ellipse at center,#d4d4d4 0%,#b9b9b9 100%) fixed;
   color:var(--gris-1);
   font-family:var(--fuente);
   font-weight:300;
-  font-size:10px;
+  font-size:10.5px;
   line-height:1.5;
   -webkit-font-smoothing:antialiased;
 }
-img{display:block;max-width:100%;filter:grayscale(100%)}
+img{display:block;max-width:100%;filter:grayscale(1) contrast(1.05)}
 a{color:inherit;text-decoration:none}
 ul,ol{list-style:none}
 
@@ -71,39 +72,58 @@ ul,ol{list-style:none}
   box-shadow:var(--sombra);
   display:grid;grid-template-columns:1fr 1fr;
   position:relative;
-  opacity:0;transform:translateY(30px);
-  transition:opacity .7s ease,transform .7s ease;
+  opacity:.15;transform:translateY(12px);
+  transition:opacity .5s ease,transform .5s ease;
   transform-origin:top center;
+  transform-style:preserve-3d;
 }
 .spread.visible{opacity:1;transform:translateY(0) scale(var(--escala))}
-/* lomo del libro */
+/* cantos de las hojas (borde derecho e inferior) */
 .spread::before{
-  content:"";position:absolute;top:0;bottom:0;left:50%;width:40px;
-  transform:translateX(-50%);pointer-events:none;z-index:2;
-  background:linear-gradient(to right,rgba(0,0,0,0) 0%,rgba(0,0,0,.10) 50%,rgba(0,0,0,0) 100%);
+  content:"";position:absolute;top:0;left:0;right:-7px;bottom:-7px;pointer-events:none;z-index:0;
+  border-style:solid;border-width:0 7px 7px 0;
+  border-image:repeating-linear-gradient(#ffffff 0 1px,#cfcfcf 1px 2px) 7;
+}
+/* sombra de contacto bajo el pliego */
+.spread::after{
+  content:"";position:absolute;left:4%;right:4%;bottom:-18px;height:45px;
+  background:rgba(0,0,0,.45);filter:blur(30px);z-index:-1;pointer-events:none;
 }
 .pagina{
-  position:relative;padding:var(--margen-pagina);
+  position:relative;padding:var(--margen-vertical) var(--margen-pagina);
   display:flex;flex-direction:column;overflow:hidden;
+  background:linear-gradient(135deg,rgba(255,255,255,.35),rgba(255,255,255,0) 60%),var(--papel);
 }
-.pagina.izq{background:var(--papel-2)}
-.pagina.der{background:var(--papel)}
 
 /* libro cerrado (portada / contraportada) */
 .spread.simple{
   width:var(--portada-w);aspect-ratio:var(--pagina-ratio);
   grid-template-columns:1fr;
 }
-.spread.simple::before{display:none}
-.spread.simple .pagina{background:var(--papel)}
+/* libro cerrado en 3D: tapa con grosor */
+.spread.simple{transform-style:preserve-3d}
+.spread.simple.visible{transform:translateY(0) rotateY(-6deg) scale(var(--escala))}
+.spread.simple::before{
+  right:-14px;bottom:-10px;border-width:0 14px 10px 0;
+  border-image:linear-gradient(to right,#e6e6e6,#bdbdbd) 14 10;
+}
+.spread.simple .pagina{transform:none}
+
+/* lomo marcado y curvatura de las hojas */
+.spread-wrap{perspective:2400px}
+.pagina.izq{transform-origin:right center;transform:rotateY(3deg)}
+.pagina.der{transform-origin:left center;transform:rotateY(-3deg)}
+.pagina.izq::after,.pagina.der::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:4}
+.pagina.izq::after{background:linear-gradient(to right,transparent 82%,rgba(0,0,0,.06) 93%,rgba(0,0,0,.25) calc(100% - 1px),rgba(0,0,0,.35) 100%)}
+.pagina.der::after{background:linear-gradient(to left,transparent 82%,rgba(0,0,0,.06) 93%,rgba(0,0,0,.25) calc(100% - 1px),rgba(0,0,0,.35) 100%)}
 
 /* encabezado corrido y numeración */
 .corrido{
-  position:absolute;top:16px;font-size:8px;color:var(--gris-3);letter-spacing:.05em;
+  position:absolute;top:16px;font-size:8px;color:#999;letter-spacing:.05em;
 }
 .pagina.izq .corrido{left:var(--margen-pagina)}
 .pagina.der .corrido{right:var(--margen-pagina);text-align:right}
-.folio{position:absolute;bottom:16px;font-size:9px;color:var(--gris-3)}
+.folio{position:absolute;bottom:16px;font-size:9px;color:#888}
 .pagina.izq .folio{left:var(--margen-pagina)}
 .pagina.der .folio{right:var(--margen-pagina)}
 
@@ -111,17 +131,17 @@ ul,ol{list-style:none}
    TIPOGRAFÍA REUTILIZABLE
    ══════════════════════════════════════════════════════════ */
 .t-seccion{
-  font-size:13px;font-weight:600;letter-spacing:.25em;text-transform:uppercase;
+  font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
   color:var(--tinta);margin-bottom:10px;padding-bottom:6px;position:relative;
 }
-.t-seccion::after{content:"";position:absolute;left:0;bottom:0;width:40px;height:1px;background:var(--tinta)}
-.t-proyecto{font-size:24px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--tinta);line-height:1.1}
-.st-proyecto{font-size:15px;font-style:italic;font-weight:300;color:var(--gris-1);margin-top:4px}
-.num-proyecto{font-size:48px;font-weight:600;color:var(--tinta);line-height:1;letter-spacing:-.02em}
-.cuerpo{font-size:10px;font-weight:300;color:var(--gris-1);line-height:1.5;text-align:justify;max-width:260px;hyphens:auto}
+.t-seccion::after{content:"";position:absolute;left:0;bottom:0;width:28px;height:1px;background:var(--gris-3)}
+.t-proyecto{font-size:30px;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:var(--tinta);line-height:1}
+.st-proyecto{font-size:14px;font-style:italic;font-weight:300;color:var(--gris-1);margin-top:2px}
+.num-proyecto{font-size:44px;font-weight:500;color:#222;line-height:1;letter-spacing:-.02em}
+.cuerpo{font-size:10.5px;font-weight:300;color:#333;line-height:1.5;text-align:justify;max-width:260px;hyphens:auto}
 .cuerpo + .cuerpo{margin-top:10px}
 .pie{font-size:8px;color:var(--gris-3);margin-top:6px;display:flex;justify-content:space-between}
-.ficha{font-size:9.5px;line-height:1.55;margin:14px 0}
+.ficha{font-size:9.5px;line-height:1.4;margin:10px 0 6px}
 .ficha b{font-weight:600;color:var(--tinta)}
 .autor-mini{font-size:9px;color:var(--gris-2);letter-spacing:.05em}
 
@@ -144,9 +164,11 @@ ul,ol{list-style:none}
 }
 #portada .ilustracion{position:absolute;right:0;top:0;width:55%;height:100%}
 #portada .ilustracion svg{width:100%;height:100%}
-#portada .titulo{position:absolute;left:44px;bottom:60px}
-#portada .titulo h1{font-size:26px;font-weight:600;letter-spacing:.35em;color:var(--tinta);text-transform:uppercase;line-height:1}
-#portada .titulo p{font-size:10px;font-weight:300;margin-top:8px;color:var(--gris-1)}
+#portada .titulo{position:absolute;left:44px;bottom:calc(100% / 3 - 40px)}
+#portada .titulo h1{font-size:28px;font-weight:600;letter-spacing:.35em;color:var(--tinta);text-transform:uppercase;line-height:1}
+#portada .titulo p{font-size:12px;font-weight:300;margin-top:10px;color:var(--gris-1)}
+#portada .titulo .anio{display:block;font-size:10px;color:#999;margin-top:4px}
+#portada .ilustracion svg,#portada .ilustracion svg g{stroke:#a8a8a8;stroke-width:.45}
 
 /* ══════════════════════════════════════════════════════════
    SPREAD 1 — PERFIL / CV
@@ -180,12 +202,13 @@ ul,ol{list-style:none}
 #indice .cabecera{position:absolute;top:40px;left:var(--margen-pagina);font-size:12px;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:var(--tinta)}
 #indice .pagina.der .cabecera{left:auto;right:var(--margen-pagina);font-weight:300;font-size:9px;letter-spacing:.15em;color:var(--gris-2)}
 #indice .grilla{
-  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  display:flex;gap:22px;z-index:3;
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translateZ(40px);
+  display:flex;gap:22px;z-index:5;
 }
 .tarjeta{width:150px;position:relative;display:block}
 .tarjeta .num{position:absolute;top:6px;right:8px;font-size:12px;font-weight:600;color:var(--tinta);z-index:1}
-.tarjeta .mini{width:150px;height:150px;border:1px solid var(--gris-5);transition:filter .3s}
+.tarjeta .mini{width:150px;height:150px;border:1px solid var(--gris-5);transition:filter .3s;overflow:hidden}
+.tarjeta .mini .ph{width:100%;height:100%}
 .tarjeta:hover .mini{filter:contrast(1.15)}
 .tarjeta .nombre{margin-top:10px;font-size:9px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--tinta);display:inline-block;border-bottom:1px solid transparent;transition:border-color .3s}
 .tarjeta:hover .nombre{border-color:var(--tinta)}
@@ -194,20 +217,23 @@ ul,ol{list-style:none}
 /* ══════════════════════════════════════════════════════════
    SPREADS DE PROYECTO — FICHA
    ══════════════════════════════════════════════════════════ */
-.ficha-proy .izq{padding-top:52px}
+.ficha-proy .izq{padding-top:44px}
+.ficha-proy .fila > div{flex:1 1 0;min-width:0}
+.ficha-proy .fila .cuerpo{max-width:none}
 .ficha-proy .fila{display:flex;gap:22px;margin-top:6px;align-items:flex-start}
-.ficha-proy .mapa{width:190px;flex:none}
-.ficha-proy .mapa .ph{width:190px;height:190px}
-.ficha-proy .esquema{margin-top:14px;width:240px;height:70px}
+.ficha-proy .mapa{width:170px;flex:none}
+.ficha-proy .mapa .ph{width:170px;height:170px}
+.ficha-proy .izq .cuerpo{font-size:9.6px;line-height:1.45}
+.ficha-proy .esquema{margin-top:6px;width:100%;max-width:240px;height:40px}
 .ficha-proy .esquema svg{width:100%;height:100%}
-.ficha-proy .lista{margin-top:auto;font-size:8px;color:var(--gris-2);columns:2;column-gap:20px;max-width:340px;padding-bottom:8px}
+.ficha-proy .lista{margin-top:auto;font-size:8px;color:var(--gris-2);columns:2;column-gap:20px;max-width:340px;padding:8px 0 18px;line-height:1.35}
 .ficha-proy .lista li{margin-bottom:2px}
-.ficha-proy .der{padding:30px}
+.ficha-proy .der{padding:36px 40px 40px}
 .ficha-proy .marco{
-  border:1px solid var(--tinta);flex:1;position:relative;padding:22px;
+  border:1px solid #222;flex:1;position:relative;padding:22px;
   display:flex;align-items:center;justify-content:center;
 }
-.ficha-proy .marco .num-proyecto{position:absolute;top:18px;right:22px}
+.ficha-proy .marco .num-proyecto{position:absolute;top:14px;right:18px;z-index:2;padding:4px 8px;background:var(--papel)}
 .ficha-proy .marco .ph{width:100%;height:100%}
 
 /* ══════════════════════════════════════════════════════════
@@ -215,8 +241,8 @@ ul,ol{list-style:none}
    ══════════════════════════════════════════════════════════ */
 .pregunta .pagina{padding:0}
 .pregunta .centro{
-  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:78%;z-index:3;text-align:center;
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translateZ(40px);
+  width:78%;z-index:5;text-align:center;
 }
 .pregunta svg{width:100%;height:auto;display:block}
 .pregunta .frase{font-size:11px;font-weight:300;color:var(--gris-1);margin-top:18px;letter-spacing:.03em}
@@ -225,12 +251,13 @@ ul,ol{list-style:none}
 /* ══════════════════════════════════════════════════════════
    SPREADS DE PROYECTO — DESARROLLO
    ══════════════════════════════════════════════════════════ */
-.desarrollo .izq{padding-top:52px}
+.desarrollo .izq{padding-top:44px}
 .desarrollo .apilados{display:flex;flex-direction:column;gap:14px;width:200px}
 .desarrollo .apilados .ph{width:200px;height:110px}
 .desarrollo .fila{display:flex;gap:22px}
-.desarrollo .fila .cuerpo{max-width:200px;padding-top:20px}
-.desarrollo .der{padding-top:52px}
+.desarrollo .fila > div:last-child{flex:1 1 0;min-width:0}
+.desarrollo .fila .cuerpo{max-width:none;padding-top:20px}
+.desarrollo .der{padding-top:44px;padding-bottom:36px}
 .desarrollo .grande{flex:1;display:flex;flex-direction:column}
 .desarrollo .grande .ph{flex:1}
 .desarrollo .grilla2{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1}
@@ -252,11 +279,11 @@ ul,ol{list-style:none}
 /* ══════════════════════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════════════════════ */
-@media (max-width:1099px) and (min-width:700px){
+@media (max-width:1099px) and (min-width:900px){
   .spread-wrap{padding:40px 0}
   .spread{max-width:none}
 }
-@media (max-width:699px){
+@media (max-width:899px){
   html{scroll-snap-type:none}
   .spread-wrap{padding:40px 16px;min-height:0}
   .spread{
@@ -264,7 +291,9 @@ ul,ol{list-style:none}
     gap:40px;width:100%;
   }
   .spread.visible{transform:none}
-  .spread::before{display:none}
+  .spread::before,.spread::after,.pagina::after{display:none}
+  .spread,.pagina.izq,.pagina.der{transform:none !important}
+  .spread.visible{transform:none !important}
   .pagina{min-height:calc(100vw * 1.2);aspect-ratio:auto;box-shadow:var(--sombra);padding:64px 28px 44px;width:100%;overflow:visible}
   #cv .retrato{width:60%}
   .t-proyecto{font-size:17px}
@@ -278,6 +307,7 @@ ul,ol{list-style:none}
   .pagina.izq .corrido,.pagina.izq .folio{left:28px}
   .pagina.der .corrido,.pagina.der .folio{right:28px}
   #indice .grilla{position:static;transform:none;flex-wrap:wrap;justify-content:center;gap:16px;margin-top:20px}
+  .pregunta .centro{transform:translate(-50%,-50%)}
   #indice .pagina.der{display:none}
   .tarjeta,.tarjeta .mini{width:120px}.tarjeta .mini{height:120px}
   .pregunta .pagina.izq{display:none}
