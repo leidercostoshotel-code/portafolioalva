@@ -158,7 +158,7 @@ const seccionProyectos = () => {
     ${campo(`${r}.duracion`, 'Duración')}
     ${campo(`${r}.colaboracion`, 'Colaboración')}
     ${campo(`${r}.estructura`, 'Estructura / sistema constructivo')}
-    ${campo(`${r}.rol`, 'Rol / Tecnologías', { ancho: true })}
+    ${campo(`${r}.rol`, 'Rol / Tecnologías', { ancho: true, ayuda: 'En cualquier campo de la ficha puedes escribir «Etiqueta: valor» (por ejemplo «Área de terreno: 11 399 m²») y esa etiqueta reemplaza al nombre del campo.' })}
     ${campo(`${r}.parrafos`, 'Descripción (ficha)', { tipo: 'parrafos', ancho: true, ayuda: 'Separa los párrafos con una línea en blanco. Escribe **así** para negrita. Los campos de la ficha que dejes vacíos no se muestran.' })}
     ${campo(`${r}.lista`, 'Lista de módulos', { tipo: 'lineas', ayuda: 'Un elemento por línea.' })}
     <div class="campo">
