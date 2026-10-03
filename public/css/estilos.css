@@ -247,6 +247,15 @@ ul,ol{list-style:none}
 .pregunta svg{width:100%;height:auto;display:block}
 .pregunta .frase{font-size:11px;font-weight:300;color:var(--gris-1);margin-top:18px;letter-spacing:.03em}
 .pregunta .frase b{font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tinta)}
+/* variante con una sola imagen a doble página */
+.pregunta.con-imagen .centro{
+  left:var(--margen-pagina);right:var(--margen-pagina);top:var(--margen-vertical);bottom:var(--margen-vertical);
+  width:auto;transform:translateZ(40px);display:flex;flex-direction:column;
+}
+.pregunta .panoramica{flex:1;min-height:0;overflow:hidden;border:1px solid var(--gris-5)}
+.pregunta .panoramica img{width:100%;height:100%;object-fit:cover}
+.pregunta.con-imagen .frase{flex:none;margin-top:14px;font-size:12px}
+.pregunta .texto-pregunta{flex:none;max-width:none;margin:10px auto 0;width:86%;font-size:9.6px;line-height:1.45;columns:2;column-gap:36px;text-align:justify}
 
 /* ══════════════════════════════════════════════════════════
    SPREADS DE PROYECTO — DESARROLLO
@@ -308,6 +317,10 @@ ul,ol{list-style:none}
   .pagina.der .corrido,.pagina.der .folio{right:28px}
   #indice .grilla{position:static;transform:none;flex-wrap:wrap;justify-content:center;gap:16px;margin-top:20px}
   .pregunta .centro{transform:translate(-50%,-50%)}
+  .pregunta.con-imagen .pagina{display:none}
+  .pregunta.con-imagen .centro{position:relative;inset:auto;width:100%;transform:none;padding:24px 16px;background:var(--papel);box-shadow:var(--sombra)}
+  .pregunta.con-imagen .panoramica{flex:none;height:52vw}
+  .pregunta .texto-pregunta{columns:1;width:100%}
   #indice .pagina.der{display:none}
   .tarjeta,.tarjeta .mini{width:120px}.tarjeta .mini{height:120px}
   .pregunta .pagina.izq{display:none}

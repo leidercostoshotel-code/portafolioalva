@@ -167,6 +167,8 @@ const seccionProyectos = () => {
       <input type="text" data-ruta="${r}.pregunta.1" data-tipo="texto" value="${esc(p.pregunta?.[1])}" placeholder="Palabra destacada">
       <input type="text" data-ruta="${r}.pregunta.2" data-tipo="texto" value="${esc(p.pregunta?.[2])}" placeholder="Final: los costos…?">
     </div>
+    ${imagen(`${r}.img.pregunta`, 'Imagen a doble página (página de pregunta)', '1800 × 700')}
+    ${campo(`${r}.textoPregunta`, 'Texto bajo la imagen (página de pregunta)', { ancho: true, alta: true, ayuda: 'Si dejas vacía la imagen, se muestra el esquema de líneas.' })}
     ${campo(`${r}.desarrollo`, 'Texto de desarrollo', { tipo: 'parrafos', ancho: true, ayuda: 'Separa los párrafos con una línea en blanco.' })}
     ${campo(`${r}.pies`, 'Pies de imagen (7 líneas, una por imagen de desarrollo)', { tipo: 'lineas', ancho: true })}
     ${imagen(`${r}.img.mapa`, 'Plano de ubicación (ficha)', '600 × 600')}

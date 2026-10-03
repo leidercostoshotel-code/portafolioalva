@@ -181,14 +181,16 @@ const spreadFicha = (p, i) => {
 
 const spreadPregunta = (p, i) => {
   const q = p.pregunta || ['', '', ''];
+  const img = p.img?.pregunta;
   return `
 <div class="spread-wrap">
-<article class="spread pregunta" data-titulo="${esc(p.titulo)}">
+<article class="spread pregunta ${img ? 'con-imagen' : ''}" data-titulo="${esc(p.titulo)}">
   <div class="pagina izq"></div>
   <div class="pagina der"></div>
   <div class="centro">
-    ${seccion(i + 1)}
+    ${img ? `<div class="panoramica"><img src="${esc(img)}" alt="${esc(p.titulo)}" loading="lazy"></div>` : seccion(i + 1)}
     <p class="frase">${esc(String(q[0] || '').trim())} <b>${esc(String(q[1] || '').trim())}</b> ${esc(String(q[2] || '').trim())}</p>
+    ${p.textoPregunta ? `<p class="cuerpo texto-pregunta">${rico(p.textoPregunta)}</p>` : ''}
   </div>
 </article>
 </div>`;
