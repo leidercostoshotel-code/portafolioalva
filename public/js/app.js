@@ -9,6 +9,8 @@ import { leerContenido, configurado } from './firebase.js';
 
 /* ── utilidades ──────────────────────────────────────────── */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* texto escapado que admite **negrita** escrita en el administrador */
+const rico = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 const pad = n => String(n).padStart(2, '0');
 const ph  = (texto, src, clase = '') =>
   `<div class="ph ${clase}">${src ? `<img src="${esc(src)}" alt="${esc(texto.replace(/<br>/g,' '))}" loading="lazy">` : texto}</div>`;
@@ -147,30 +149,25 @@ const spreadIndice = d => `
 </div>`;
 
 /* ── SPREADS DE PROYECTO ─────────────────────────────────── */
-const spreadFicha = (p, i) => `
+const spreadFicha = (p, i) => {
+  const datos = [['Ubicación', p.ubicacion], ['Área', p.area], ['Año', p.anio], ['Duración', p.duracion],
+                 ['Colaboración', p.colaboracion], ['Estructura', p.estructura], ['Rol / Tecnologías', p.rol]]
+    .filter(([, v]) => v).map(([k, v]) => `<b>${k}:</b> ${rico(v)}`).join('<br>');
+  return `
 <div class="spread-wrap">
 <article class="spread ficha-proy" id="proyecto-${esc(p.num)}" data-titulo="${esc(p.titulo)}">
   <div class="pagina izq">
     <h2 class="t-proyecto">${esc(p.titulo)}</h2>
     <p class="st-proyecto">${esc(p.subtitulo)}</p>
-    <div class="ficha">
-      <b>Ubicación:</b> ${esc(p.ubicacion)}<br>
-      <b>Año:</b> ${esc(p.anio)}<br>
-      <b>Duración:</b> ${esc(p.duracion)}<br>
-      <b>Colaboración:</b> ${esc(p.colaboracion)}<br>
-      <b>Rol / Tecnologías:</b> ${esc(p.rol)}
-    </div>
+    <div class="ficha">${datos}</div>
     <div class="fila">
       <figure class="mapa">
         ${ph(`Mapa o diagrama<br>proyecto ${esc(p.num)}<br>600 × 600`, p.img?.mapa)}
         <figcaption class="pie"><span>Plano de ubicación</span><span>Escala 1:1000</span></figcaption>
       </figure>
-      <div>
-        ${(p.parrafos || []).map(t => `<p class="cuerpo">${esc(t)}</p>`).join('')}
-        <div class="esquema">${esquema(i + 1)}</div>
-      </div>
+      ${(p.parrafos || []).map(t => `<p class="cuerpo">${rico(t)}</p>`).join('')}
     </div>
-    <ol class="lista">${(p.lista || []).map((l, n) => `<li>${n+1}. ${esc(l)}</li>`).join('')}</ol>
+    ${(p.lista || []).length ? `<ol class="lista">${p.lista.map((l, n) => `<li>${n+1}. ${esc(l)}</li>`).join('')}</ol>` : ''}
   </div>
   <div class="pagina der">
     <div class="marco">
@@ -180,6 +177,7 @@ const spreadFicha = (p, i) => `
   </div>
 </article>
 </div>`;
+};
 
 const spreadPregunta = (p, i) => {
   const q = p.pregunta || ['', '', ''];
@@ -207,7 +205,7 @@ const spreadDesarrollo = p => {
       <div class="apilados">
         ${[0, 1, 2].map(i => ph(`${esc(pies[i] || 'Imagen')}<br>800 × 440`, dev[i])).join('')}
       </div>
-      <div>${(p.desarrollo || []).map(t => `<p class="cuerpo">${esc(t)}</p>`).join('')}</div>
+      <div>${(p.desarrollo || []).map(t => `<p class="cuerpo">${rico(t)}</p>`).join('')}</div>
     </div>
   </div>
   <div class="pagina der">

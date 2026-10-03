@@ -53,10 +53,12 @@ export const DATOS_BASE = {
       titulo: 'Plaza Gastronómica',
       subtitulo: 'Mercado gastronómico en el distrito de Chiclayo',
       tipo: 'Equipamiento comercial · Taller VIII',
-      ubicacion: 'Urb. Federico Villarreal, Chiclayo, Lambayeque',
+      ubicacion: 'Urb. Federico Villarreal (Av. Chinchaysuyo / Av. La Libertad / Av. Haya de la Torre), Chiclayo, Lambayeque',
+      area: 'Terreno 11 399,69 m² · Área libre 8 712,69 m²',
       anio: '2024',
       duracion: 'Un ciclo académico',
       colaboracion: 'Taller de Diseño Arquitectónico VIII, USMP',
+      estructura: 'Sistema constructivo híbrido: concreto y cerchas metálicas',
       rol: 'Diseño arquitectónico, planimetría y visualización · AutoCAD, SketchUp, Enscape',
       parrafos: [
         'El proyecto propone un mercado gastronómico que integra lo comercial, lo cultural y lo turístico en un terreno de 11 399 m² dentro de la trama de Chiclayo. Cuatro volúmenes modulares de tres niveles se apoyan sobre una plataforma común y liberan el 70 % del área como espacio público, frente al 30 % que exige la norma.',
@@ -149,8 +151,8 @@ export const DATOS_BASE = {
 
 /* Proyecto vacío que usa el administrador al pulsar "Añadir proyecto" */
 export const PROYECTO_VACIO = () => ({
-  num: '', titulo: 'Nuevo proyecto', subtitulo: '', tipo: '', ubicacion: '', anio: '',
-  duracion: '', colaboracion: '', rol: '',
+  num: '', titulo: 'Nuevo proyecto', subtitulo: '', tipo: '', ubicacion: '', area: '', anio: '',
+  duracion: '', colaboracion: '', estructura: '', rol: '',
   parrafos: ['', ''], lista: [], pregunta: ['¿', '', '?'], desarrollo: ['', ''],
   pies: ['', '', '', ''], img: { mapa: '', principal: '', dev: ['', '', '', '', '', '', ''] }
 });

@@ -153,11 +153,13 @@ const seccionProyectos = () => {
     ${campo(`${r}.subtitulo`, 'Subtítulo')}
     ${campo(`${r}.tipo`, 'Tipo (aparece en el índice)')}
     ${campo(`${r}.ubicacion`, 'Ubicación')}
+    ${campo(`${r}.area`, 'Área (terreno, techada…)')}
     ${campo(`${r}.anio`, 'Año')}
     ${campo(`${r}.duracion`, 'Duración')}
     ${campo(`${r}.colaboracion`, 'Colaboración')}
+    ${campo(`${r}.estructura`, 'Estructura / sistema constructivo')}
     ${campo(`${r}.rol`, 'Rol / Tecnologías', { ancho: true })}
-    ${campo(`${r}.parrafos`, 'Descripción (ficha)', { tipo: 'parrafos', ancho: true, ayuda: 'Separa los párrafos con una línea en blanco.' })}
+    ${campo(`${r}.parrafos`, 'Descripción (ficha)', { tipo: 'parrafos', ancho: true, ayuda: 'Separa los párrafos con una línea en blanco. Escribe **así** para negrita. Los campos de la ficha que dejes vacíos no se muestran.' })}
     ${campo(`${r}.lista`, 'Lista de módulos', { tipo: 'lineas', ayuda: 'Un elemento por línea.' })}
     <div class="campo">
       <label>Pregunta central</label>
