@@ -9,6 +9,7 @@ export const DATOS_BASE = {
   autor: 'Clara Alva Mas',
   anio: '2026',
   tituloPortada: 'Portfolio',
+  portadaImagen: '',          /* URL de la imagen de portada; vacío = ilustración isométrica */
 
   perfil: {
     foto: '',

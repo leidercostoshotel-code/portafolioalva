@@ -100,6 +100,7 @@ const seccionPerfil = () => `
     ${campo('autor', 'Nombre del autor')}
     ${campo('anio', 'Año')}
     ${campo('tituloPortada', 'Título de portada')}
+    ${imagen('portadaImagen', 'Imagen de portada (reemplaza la ilustración; vacío = dibujo isométrico)', '900 × 1200')}
   </div>
 </div>
 <div class="tarjeta"><h2>Perfil</h2>

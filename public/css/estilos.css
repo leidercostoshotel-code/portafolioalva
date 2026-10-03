@@ -164,6 +164,14 @@ ul,ol{list-style:none}
 }
 #portada .ilustracion{position:absolute;right:0;top:0;width:55%;height:100%}
 #portada .ilustracion svg{width:100%;height:100%}
+/* imagen de portada subida desde el administrador */
+#portada .ilustracion.foto{width:62%}
+#portada .ilustracion.foto img{width:100%;height:100%;object-fit:cover}
+#portada .ilustracion.foto::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(to right,var(--papel) 0%,rgba(246,246,244,0) 38%),
+             linear-gradient(to top,var(--papel) 0%,rgba(246,246,244,0) 30%);
+}
 #portada .titulo{position:absolute;left:44px;bottom:calc(100% / 3 - 40px)}
 #portada .titulo h1{font-size:28px;font-weight:600;letter-spacing:.35em;color:var(--tinta);text-transform:uppercase;line-height:1}
 #portada .titulo p{font-size:12px;font-weight:300;margin-top:10px;color:var(--gris-1)}

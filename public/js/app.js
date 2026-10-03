@@ -89,7 +89,7 @@ const spreadPortada = d => `
   <section class="spread simple" id="portada" aria-label="Portada">
     <div class="pagina">
       <span class="vertical">Portafolio ${esc(d.anio)}</span>
-      <div class="ilustracion" aria-hidden="true">${SVG_PORTADA}</div>
+      <div class="ilustracion ${d.portadaImagen ? 'foto' : ''}" aria-hidden="true">${d.portadaImagen ? `<img src="${esc(d.portadaImagen)}" alt="">` : SVG_PORTADA}</div>
       <div class="titulo"><h1>${esc(d.tituloPortada || 'Portfolio')}</h1><p>${esc(d.autor)}<span class="anio">${esc(d.anio)}</span></p></div>
     </div>
   </section>
