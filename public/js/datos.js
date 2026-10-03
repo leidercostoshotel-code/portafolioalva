@@ -53,10 +53,12 @@ export const DATOS_BASE = {
       titulo: 'Plaza Gastronómica',
       subtitulo: 'Mercado gastronómico en el distrito de Chiclayo',
       tipo: 'Equipamiento comercial · Taller VIII',
-      ubicacion: 'Urb. Federico Villarreal, Chiclayo, Lambayeque',
+      ubicacion: 'Urb. Federico Villarreal (Av. Chinchaysuyo / Av. La Libertad / Av. Haya de la Torre), Chiclayo, Lambayeque',
+      area: 'Terreno 11 399,69 m² · Área libre 8 712,69 m²',
       anio: '2024',
       duracion: 'Un ciclo académico',
       colaboracion: 'Taller de Diseño Arquitectónico VIII, USMP',
+      estructura: 'Sistema constructivo híbrido: concreto y cerchas metálicas',
       rol: 'Diseño arquitectónico, planimetría y visualización · AutoCAD, SketchUp, Enscape',
       parrafos: [
         'El proyecto propone un mercado gastronómico que integra lo comercial, lo cultural y lo turístico en un terreno de 11 399 m² dentro de la trama de Chiclayo. Cuatro volúmenes modulares de tres niveles se apoyan sobre una plataforma común y liberan el 70 % del área como espacio público, frente al 30 % que exige la norma.',
@@ -64,15 +66,17 @@ export const DATOS_BASE = {
       ],
       lista: ['Sótano de estacionamiento (3 585 m²)', 'Plazas y calles peatonales', 'Puestos de venta y cocinas', 'Zonas de consumo en altura', 'Espacios culturales complementarios', 'Rehabilitación del entorno urbano'],
       pregunta: ['¿Cómo convertir un mercado en una', 'plaza', 'que active su barrio?'],
+      textoPregunta: 'La plaza no es el residuo entre los edificios sino el proyecto mismo: cuatro módulos de tres niveles se retiran para liberar el 70 % del predio como espacio público continuo, abierto a las avenidas Libertad y Víctor Raúl, de modo que el mercado se convierta en el lugar donde el barrio se encuentra, come y permanece.',
       desarrollo: [
         'Las estrategias urbanas se definieron primero: una conexión vehicular entre la Av. Libertad y la Av. Víctor Raúl, un sistema de calles exclusivamente peatonales que enlaza los equipamientos vecinos y la rehabilitación de áreas en deterioro como espacios públicos.',
         'La estructura combina columnas y vigas de concreto con cerchas metálicas vistas que cubren las luces mayores; la envolvente alterna ladrillo caravista rojo, muros cortina y vidrio templado de 8 mm, de modo que los frentes comerciales se abran a la plaza.'
       ],
-      pies: ['Estrategias urbanas', 'Volumetría y estructura', 'Entorno y emplazamiento', 'Elevaciones', 'Cortes transversales', 'Planta general', 'Vista exterior desde la plaza'],
+      pies: ['Estrategias urbanas', 'Volumetría y estructura', 'Entorno y emplazamiento', 'Elevaciones', 'Cortes transversales', 'Planta general', 'Emplazamiento'],
       img: {
         mapa: 'img/plaza-ubicacion.jpg',
         principal: 'img/plaza-sintesis.jpg',
-        dev: ['img/plaza-estrategias.jpg', 'img/plaza-estructura.jpg', 'img/plaza-entorno.jpg', 'img/plaza-elevaciones.jpg', 'img/plaza-cortes.jpg', 'img/plaza-planta.jpg', 'img/plaza-render.jpg']
+        pregunta: 'img/plaza-render.jpg',
+        dev: ['img/plaza-estrategias.jpg', 'img/plaza-estructura.jpg', 'img/plaza-entorno.jpg', 'img/plaza-elevaciones.jpg', 'img/plaza-cortes.jpg', 'img/plaza-planta.jpg', 'img/plaza-emplazamiento.jpg']
       }
     },
     {
@@ -96,7 +100,7 @@ export const DATOS_BASE = {
         'Los planos y visualizaciones de esta sección se irán incorporando desde el administrador del portafolio.'
       ],
       pies: ['Diagnóstico urbano', 'Programa y zonificación', 'Emplazamiento', 'Planta general', 'Cortes', 'Residencia', 'Vista del conjunto'],
-      img: { mapa: '', principal: '', dev: ['', '', '', '', '', '', ''] }
+      img: { mapa: '', principal: '', pregunta: '', dev: ['', '', '', '', '', '', ''] }
     },
     {
       num: '03',
@@ -119,7 +123,7 @@ export const DATOS_BASE = {
         'Las imágenes de esta sección se pueden añadir desde el administrador con la autorización de la empresa.'
       ],
       pies: ['Planta de carpa solar', 'Detalle de tanque tina', 'Galpón de cuyes', 'Corte de galpón', 'Propuesta gráfica', 'Lámina de presentación', 'Detalle constructivo'],
-      img: { mapa: '', principal: '', dev: ['', '', '', '', '', '', ''] }
+      img: { mapa: '', principal: '', pregunta: '', dev: ['', '', '', '', '', '', ''] }
     },
     {
       num: '04',
@@ -142,15 +146,15 @@ export const DATOS_BASE = {
         'Las fotografías de obra y formatos de control se pueden añadir desde el administrador.'
       ],
       pies: ['Formato de metrado', 'Control de avance', 'Presupuesto básico', 'Registro fotográfico', 'Coordinación en campo', 'Verificación de partidas', 'Informe de seguimiento'],
-      img: { mapa: '', principal: '', dev: ['', '', '', '', '', '', ''] }
+      img: { mapa: '', principal: '', pregunta: '', dev: ['', '', '', '', '', '', ''] }
     }
   ]
 };
 
 /* Proyecto vacío que usa el administrador al pulsar "Añadir proyecto" */
 export const PROYECTO_VACIO = () => ({
-  num: '', titulo: 'Nuevo proyecto', subtitulo: '', tipo: '', ubicacion: '', anio: '',
-  duracion: '', colaboracion: '', rol: '',
-  parrafos: ['', ''], lista: [], pregunta: ['¿', '', '?'], desarrollo: ['', ''],
-  pies: ['', '', '', ''], img: { mapa: '', principal: '', dev: ['', '', '', '', '', '', ''] }
+  num: '', titulo: 'Nuevo proyecto', subtitulo: '', tipo: '', ubicacion: '', area: '', anio: '',
+  duracion: '', colaboracion: '', estructura: '', rol: '',
+  parrafos: ['', ''], lista: [], pregunta: ['¿', '', '?'], textoPregunta: '', desarrollo: ['', ''],
+  pies: ['', '', '', ''], img: { mapa: '', principal: '', pregunta: '', dev: ['', '', '', '', '', '', ''] }
 });
