@@ -152,7 +152,10 @@ const spreadIndice = d => `
 const spreadFicha = (p, i) => {
   const datos = [['Ubicación', p.ubicacion], ['Área', p.area], ['Año', p.anio], ['Duración', p.duracion],
                  ['Colaboración', p.colaboracion], ['Estructura', p.estructura], ['Rol / Tecnologías', p.rol]]
-    .filter(([, v]) => v).map(([k, v]) => `<b>${k}:</b> ${rico(v)}`).join('<br>');
+    .filter(([, v]) => v)
+    /* si el valor empieza por "Etiqueta: …", esa etiqueta sustituye a la del campo */
+    .map(([k, v]) => { const m = String(v).match(/^([^:*\d]{2,30}):\s+(.+)$/s); return m ? [m[1].trim(), m[2]] : [k, v]; })
+    .map(([k, v]) => `<b>${k}:</b> ${rico(v)}`).join('<br>');
   return `
 <div class="spread-wrap">
 <article class="spread ficha-proy" id="proyecto-${esc(p.num)}" data-titulo="${esc(p.titulo)}">
